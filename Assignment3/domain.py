@@ -40,11 +40,13 @@ directions = [(0, 1), (1, 0), (-1, 0), (0, -1)]
 
 
 class Individual:
-    def __init__(self, map: Map, size=0):
+    def __init__(self, map: Map, start, size=0):
+        self.start = start
         self.__size = size
         self.__f = None
         self.__map = map
-        self.__x = [rnd.randint(0, 3) for _ in range(self.__size)]
+        self.__map.surface = map.surface.__deepcopy__()
+        self.x = [rnd.randint(0, 3) for _ in range(self.__size)]
 
     # def __initialize(self):
     # start = [randint(0, self.__map.n), randint(0, self.__map.m)]
@@ -67,22 +69,52 @@ class Individual:
     # return path
 
     def fitness(self):
-        pass
-        # compute the fitness for the individual
-        # and save it in self.__f
+        f = 0
+        x, y = self.start
+        for dir in self.x:
+            move = directions[dir]
+            if (self.__map.surface[x][y] != 1):
+                self.__map.surface[x][y] = 2
+            else:
+                stop = 1
+                break
+            u, g = x, y
+            for var in directions:
+                x, y = u, g
+                while ((0 <= x + var[0] < self.__map.n and
+                        0 <= y + var[1] < self.__map.m) and
+                       self.__map.surface[x + var[0]][y + var[1]] != 1):
+                    x = x + var[0]
+                    y = y + var[1]
+                    f += 1
+            x += move[0]
+            y += move[1]
+        self.__f = f
 
     def mutate(self, mutateProbability=0.01):
         if rnd.random() < mutateProbability:
             chosen = rnd.randint(0, self.__size - 1)
-            new = self.__x[chosen]
-            while self.__x[chosen] == new:
-                self.__x[chosen] = rnd.randint(0, 3)
+            new = self.x[chosen]
+            while self.x[chosen] == new:
+                self.x[chosen] = rnd.randint(0, 3)
 
     def crossover(self, otherParent, crossoverProbability=0.8):
         offspring1, offspring2 = Individual(self.__map, self.__size), Individual(self.__map, self.__size)
         if rnd.random() < crossoverProbability:
-            pass
-            # perform the crossover between the self and the otherParent 
+            cut = rnd.randint(0, offspring1.__size)
+            for i in range(offspring1.__size):
+                if i < cut:
+                    offspring1.x[i] = self.x[i]
+                    offspring2.x[i] = otherParent.x[i]
+                else:
+                    offspring1.x[i] = otherParent.x[i]
+                    offspring2.x[i] = self.x[i]
+            offspring1.fitness()
+            offspring2.fitness()
+            if offspring1.__f > offspring2.__f:
+                return offspring1
+            return offspring2
+            # perform the crossover between the self and the otherParent
 
         return offspring1, offspring2
 
@@ -105,9 +137,12 @@ class Population():
             x.fitness()
 
     def selection(self, k=1):
-        # perform a selection of k individuals from the population
-        # and returns that selection
-        pass
+        s = [x for x in range(self.__populationSize)]
+        rnd.shuffle(s)
+        s = s[:k]
+        while k > 1:
+            if self.__v[s[0]].getFintess() > self.__v[s[1]].getFintess():
+
 
     def avgFit(self):
         s = 0
@@ -119,6 +154,13 @@ class Population():
         fit = self.__v[0]
         for i in self.__v:
             if i.fitness() > fit.fitness():
+                fit = i
+        return fit
+
+    def getWorst(self):
+        fit = self.__v[0]
+        for i in self.__v:
+            if i.fitness() < fit.fitness():
                 fit = i
         return fit
 
