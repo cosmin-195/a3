@@ -49,7 +49,7 @@ class controller():
         for _ in range(30):
             seed = randint(0, 10000)
             rnd.seed(seed)
-            self.population = self.repo.createPopulation([args['popSize'], args['individualSize']])
+            self.population = self.repo.createPopulation([args['popSize'], args['individualSize']], rnd)
             avgFits.append(self.run())
             seeds.append(seed)
             best.append(self.population.getBest())

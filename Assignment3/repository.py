@@ -9,9 +9,9 @@ class Repository():
         self.cmap = Map()
         self.cmap.randomMap()
         
-    def createPopulation(self, args):
+    def createPopulation(self, args, rnd):
         # args = [populationSize, individualSize] -- you can add more args
-        pop = Population(args[0], args[1])
+        pop = Population(rnd, self.cmap, args[0], args[1])
         self.__populations.append(pop)
         return pop
 
