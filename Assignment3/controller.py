@@ -10,6 +10,9 @@ class controller():
         self.args = args
         self.repo = Repository()
 
+    def getMap(self):
+        return self.repo.getMap()
+
     def iteration(self):
         # args - list of parameters needed to run one iteration
         # a iteration:
@@ -21,10 +24,10 @@ class controller():
         for _ in range(self.args['popSize']):
             p1, p2 = self.population.selection(2)
             kid = p1.crossover(p2)
-            kid = kid.mutate()
+            kid.mutate()
             kid.fitness()
             worst = self.population.getWorst()
-            if worst.getFitness() < kid.getFitness:
+            if worst.getFintess() < kid.getFintess():
                 worst = kid
 
 
@@ -38,21 +41,22 @@ class controller():
         # return the results and the info for statistics
         for _ in range(self.args['iterations']):
             self.iteration()
-        return self.population.getBest().f
+        return self.population.getBest().getFintess()
 
-    def solver(self, args):
+    def solver(self):
         # args - list of parameters needed in order to run the solver
         # 30 it thing
         seeds = []
         avgFits = []
         best = []
-        for _ in range(30):
+        for i in range(30):
             seed = randint(0, 10000)
             rnd.seed(seed)
-            self.population = self.repo.createPopulation([args['popSize'], args['individualSize']], rnd)
+            self.population = self.repo.createPopulation([self.args['popSize'], self.args['individualSize']], rnd)
             avgFits.append(self.run())
             seeds.append(seed)
             best.append(self.population.getBest())
+            print("Iteration "+ str(i) + " #")
         return seeds, avgFits, best
         # create the population,
         # run the algorithm

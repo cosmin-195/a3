@@ -25,39 +25,56 @@ from domain import *
 class UI:
     def __init__(self):
         self.defaultArgs = {
-            'iterations': 1000,
-            'popSize': 1000,
+            'iterations': 100,
+            'popSize': 100,
             'individualSize': 20,
             'crossOver': 0.8,
             'mutate': 0.01
         }
+
     def stats(self, P):
+        pass
 
     def run(self):
-        a = input("Choose the number of iterations. \nInability to decide will lead to me making the choice for you (1000): ")
-        if a!="":
-            self.defaultArgs['iterations'] = int(a)
-        a = input(
-            "Choose the population size. \nInability to decide will lead to me making the choice for you (1000): ")
-        if a != "":
-            self.defaultArgs['popSize'] = int(a)
-        a = input(
-            "Choose the individual size. \nInability to decide will lead to me making the choice for you (20): ")
-        if a != "":
-            self.defaultArgs['individualSize'] = int(a)
-        a = input(
-            "Choose the cross-over rate. \nInability to decide will lead to me making the choice for you (0.8): ")
-        if a != "":
-            self.defaultArgs['iterations'] = float(a)
-        a = input(
-            "Choose the mutation rate. \nInability to decide will lead to me making the choice for you (0.01): ")
-        if a != "":
-            self.defaultArgs['iterations'] = float(a)
+        # a = input("Choose the number of iterations. \nInability to decide will lead to me making the choice for you (1000): ")
+        # if a!="":
+        #     self.defaultArgs['iterations'] = int(a)
+        # a = input(
+        #     "Choose the population size. \nInability to decide will lead to me making the choice for you (1000): ")
+        # if a != "":
+        #     self.defaultArgs['popSize'] = int(a)
+        # a = input(
+        #     "Choose the individual size. \nInability to decide will lead to me making the choice for you (20): ")
+        # if a != "":
+        #     self.defaultArgs['individualSize'] = int(a)
+        # a = input(
+        #     "Choose the cross-over rate. \nInability to decide will lead to me making the choice for you (0.8): ")
+        # if a != "":
+        #     self.defaultArgs['iterations'] = float(a)
+        # a = input(
+        #     "Choose the mutation rate. \nInability to decide will lead to me making the choice for you (0.01): ")
+        # if a != "":
+        #     self.defaultArgs['iterations'] = float(a)
 
         cont = controller(self.defaultArgs)
-        seeds, fits = cont.solver(cont)
+        pg = initPyGame((400, 400))
+        pg.blit(image(cont.getMap()), (0, 0))
+        pygame.display.flip()
+        time.sleep(3)
+        closePyGame()
+        seeds, fits, bests = cont.solver()
         for i in range(30):
-            print(i, " seed:", seeds[i], "fitness:"+fits[i])
+            print(i, " seed:", str(seeds[i]), "fitness:" + str(fits[i]) + "  best=",end=" ")
+            for x in bests[i].x:
+                if x == 0:
+                    print("UP",end=" ")
+                if x == 1:
+                    print("RIGHT", end=" ")
+                if x == 2:
+                    print("LEFT", end=" ")
+                if x == 3:
+                    print("DOWN", end=" ")
+            print()
 
         while True:
             print()

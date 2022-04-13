@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+import copy
 from random import *
 from utils import *
 import numpy as np
@@ -35,7 +35,7 @@ class gene:
         pass
 
 
-directions = [(0, 1), (1, 0), (-1, 0), (0, -1)]
+directions = [(0, -1), (1, 0), (-1, 0), (0, 1)]
 
 
 class Individual:
@@ -44,9 +44,8 @@ class Individual:
         self.start = start
         self.__size = size
         self.__f = None
-        self.__map = map
-        self.__map.surface = map.surface.__deepcopy__()
-        self.x = [rnd.randint(0, 3) for _ in range(self.__size)]
+        self.__map = copy.deepcopy(map)
+        self.x = [_rnd.randint(0, 3) for _ in range(self.__size)]
 
     # def __initialize(self):
     # start = [randint(0, self.__map.n), randint(0, self.__map.m)]
@@ -69,26 +68,34 @@ class Individual:
     # return path
 
     def fitness(self):
+        # deepcopy map + mark + compute
+        m = copy.deepcopy(self.__map)
         f = 0
         x, y = self.start
         for dir in self.x:
             move = directions[dir]
-            if (self.__map.surface[x][y] != 1):
-                self.__map.surface[x][y] = 2
+            if m.surface[x][y] != 1:
+                m.surface[x][y] = 2
             else:
                 stop = 1
                 break
             u, g = x, y
             for var in directions:
-                x, y = u, g
-                while ((0 <= x + var[0] < self.__map.n and
-                        0 <= y + var[1] < self.__map.m) and
-                       self.__map.surface[x + var[0]][y + var[1]] != 1):
-                    x = x + var[0]
-                    y = y + var[1]
-                    f += 1
+                dx, dy = u, g
+                while ((0 <= dx + var[0] < m.n and
+                        0 <= dy + var[1] < m.m) and
+                       m.surface[dx + var[0]][dy + var[1]] != 1):
+                    m.surface[dx + var[0]][dy + var[1]] = 2
+                    dx = dx + var[0]
+                    dy = dy + var[1]
+
             x += move[0]
             y += move[1]
+        for i in range(m.n):
+            for j in range(m.m):
+                if m.surface[i][j] == 2:
+                    f += 1
+
         self.__f = f
 
     def mutate(self, mutateProbability=0.01):
@@ -99,7 +106,9 @@ class Individual:
                 self.x[chosen] = self._rnd.randint(0, 3)
 
     def crossover(self, otherParent, crossoverProbability=0.8):
-        offspring1, offspring2 = Individual(self.__map, self.__size), Individual(self.__map, self.__size)
+        offspring1, offspring2 = Individual(self._rnd, self.__map, (0, 0), self.__size), Individual(self._rnd,
+                                                                                                    self.__map, (0, 0),
+                                                                                                    self.__size)
         if self._rnd.random() < crossoverProbability:
             cut = self._rnd.randint(0, offspring1.__size)
             for i in range(offspring1.__size):
@@ -114,9 +123,10 @@ class Individual:
             if offspring1.__f > offspring2.__f:
                 return offspring1
             return offspring2
-            # perform the crossover between the self and the otherParent
-
-        return offspring1, offspring2
+        if (self.getFintess() > otherParent.getFintess()):
+            return copy.deepcopy(self)
+        return copy.deepcopy(otherParent)
+        # perform the crossover between the self and the otherParent
 
     def getFintess(self):
         return self.__f
@@ -128,53 +138,51 @@ class Individual:
 class Population():
     def __init__(self, _rnd, start, map: Map, populationSize=0, individualSize=0):
         self.__populationSize = populationSize
-        self.__v = [Individual(map, start, individualSize) for x in range(populationSize)]
+        self.v = [Individual(_rnd, map, start, individualSize) for x in range(populationSize)]
         self.avgFits = []
         self._rnd = _rnd
 
     def evaluate(self):
         # evaluates the population
-        for x in self.__v:
+        for x in self.v:
             x.fitness()
 
-    def selection(self, k=2, tournamentSize = 15):
+    def selection(self, k=2, tournamentSize=15):
         result = []
         for _ in range(k):
             s = [x for x in range(self.__populationSize)]
             self._rnd.shuffle(s)
             s = s[:tournamentSize]
             while len(s) > 1:
-                if self.__v[s[-1]].getFintess() > self.__v[s[-2]].getFintess():
-                    self.__v[s[-2]]=self.__v[s[-1]]
+                if self.v[s[-1]].getFintess() > self.v[s[-2]].getFintess():
+                    s[-2] = s[-1]
                 s.pop()
-            result.append(s[0])
+            result.append(self.v[s[0]])
         return result
-
 
     def avgFit(self):
         s = 0
-        for x in self.__v:
+        for x in self.v:
             s += x.getFintess()
-        return s / self.__v[0].getSize()
+        return s / self.v[0].getSize()
 
     def getBest(self):
-        fit = self.__v[0]
-        for i in self.__v:
-            if i.fitness() > fit.fitness():
+        fit = self.v[0]
+        for i in self.v:
+            if i.getFintess() > fit.getFintess():
                 fit = i
         return fit
 
     def getWorst(self):
-        fit = self.__v[0]
-        for i in self.__v:
-            if i.fitness() < fit.fitness():
+        fit = self.v[0]
+        for i in self.v:
+            if i.getFintess() < fit.getFintess():
                 fit = i
         return fit
 
-
-m = Map()
-m.randomMap()
-p = Population((0,0),m,100)
-p.evaluate()
-p.selection()
-
+#
+# m = Map()
+# m.randomMap()
+# p = Population(Random(), (0, 0), m, 100, 10)
+# p.evaluate()
+# p.selection()

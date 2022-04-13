@@ -11,10 +11,13 @@ class Repository():
         
     def createPopulation(self, args, rnd):
         # args = [populationSize, individualSize] -- you can add more args
-        pop = Population(rnd, self.cmap, args[0], args[1])
+        pop = Population(rnd, (0,0),self.cmap, args[0], args[1])
+        pop.evaluate()
         self.__populations.append(pop)
         return pop
 
+    def getMap(self):
+        return self.cmap
 
     def saveMap(self, file):
         with open(file, 'wb') as f:
