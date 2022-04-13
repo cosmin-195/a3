@@ -78,17 +78,16 @@ class Individual:
                 m.surface[x][y] = 2
             else:
                 stop = 1
+                f-=10
                 break
-            u, g = x, y
             for var in directions:
-                dx, dy = u, g
+                dx, dy = x, y
                 while ((0 <= dx + var[0] < m.n and
                         0 <= dy + var[1] < m.m) and
                        m.surface[dx + var[0]][dy + var[1]] != 1):
                     m.surface[dx + var[0]][dy + var[1]] = 2
                     dx = dx + var[0]
                     dy = dy + var[1]
-
             x += move[0]
             y += move[1]
         for i in range(m.n):
@@ -164,7 +163,7 @@ class Population():
         s = 0
         for x in self.v:
             s += x.getFintess()
-        return s / self.v[0].getSize()
+        return s / self.__populationSize
 
     def getBest(self):
         fit = self.v[0]

@@ -19,15 +19,24 @@ class Repository():
     def getMap(self):
         return self.cmap
 
-    def saveMap(self, file):
+    def saveMap(self, file, map):
         with open(file, 'wb') as f:
-            pickle.dump(self.cmap, f)
+            pickle.dump(map, f)
             f.close()
+
+    def setMap(self, map):
+        self.map = map
+
+    def genMap(self):
+        m = Map()
+        m.randomMap()
+        return m
 
     def loadMap(self, file):
         with open(file, 'rb') as f:
-            self.cmap = pickle.load(f)
+            map = pickle.load(f)
             f.close()
+            return map
 
 
     # TO DO : add the other components for the repository: 

@@ -13,6 +13,21 @@ class controller():
     def getMap(self):
         return self.repo.getMap()
 
+    def setMap(self, map):
+        self.repo.setMap(map)
+
+    def genMap(self):
+        return self.repo.genMap()
+
+    def loadMap(self, file):
+        return self.repo.loadMap(file)
+
+    def saveMap(self, file, map):
+        return self.repo.saveMap(file, map)
+
+    def setArgs(self, args):
+        self.args = args
+
     def iteration(self):
         # args - list of parameters needed to run one iteration
         # a iteration:
@@ -23,8 +38,8 @@ class controller():
         # steady - state --
         for _ in range(self.args['popSize']):
             p1, p2 = self.population.selection(2)
-            kid = p1.crossover(p2)
-            kid.mutate()
+            kid = p1.crossover(p2,self.args['crossOver'])
+            kid.mutate(self.args['mutate'])
             kid.fitness()
             worst = self.population.getWorst()
             if worst.getFintess() < kid.getFintess():
@@ -49,7 +64,7 @@ class controller():
         seeds = []
         avgFits = []
         best = []
-        for i in range(30):
+        for i in range(self.args['runs']):
             seed = randint(0, 10000)
             rnd.seed(seed)
             self.population = self.repo.createPopulation([self.args['popSize'], self.args['individualSize']], rnd)
